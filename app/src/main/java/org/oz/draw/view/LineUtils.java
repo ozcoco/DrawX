@@ -17,6 +17,242 @@ import android.util.Log;
 public class LineUtils {
 
 
+    public static class QuadBezier {
+
+        private int max = 1080;
+
+        private float x0, y0;
+        private float x1, y1;
+        private float x2, y2;
+
+        //
+        private float _x02, _y02;
+
+        public QuadBezier(float x0, float y0, float x1, float y1, float x2, float y2) {
+            this.x0 = x0;
+            this.y0 = y0;
+            this.x1 = x1;
+            this.y1 = y1;
+            this.x2 = x2;
+            this.y2 = y2;
+        }
+
+        //p01
+        private float p01x(float t) {
+            return (1 - t) * x0 + t * x1;
+        }
+
+        private float p01y(float t) {
+            return (1 - t) * y0 + t * y1;
+        }
+
+        //p11
+        private float p11x(float t) {
+            return (1 - t) * x1 + t * x2;
+        }
+
+        private float p11y(float t) {
+            return (1 - t) * y1 + t * y2;
+        }
+
+        //p02 ---->x
+        private float p02x(float t) {
+            return (1 - t) * p01x(t) + t * p11x(t);
+        }
+
+        // ---->y
+        private float p02y(float t) {
+            return (1 - t) * p01y(t) + t * p11y(t);
+        }
+
+
+        private float x(float t) {
+            return p02x(t);
+        }
+
+        private float y(float t) {
+            return p02y(t);
+        }
+
+
+        public float[] p(float t) {
+
+            return new float[]{x(t), y(t)};
+        }
+
+
+        private float bX() {
+            return x1 - 2 * x0;
+
+        }
+
+        private float bY() {
+            return y1 - 2 * y0;
+        }
+
+        private float aX() {
+            return x0 - 2 * x1 + x2;
+        }
+
+        private float aY() {
+            return y0 - 2 * y1 + y2;
+        }
+
+        private float cX() {
+            return x0 - _x02;
+        }
+
+        private float cY() {
+            return y0 - _y02;
+        }
+
+        private double deltaX() {
+            return Math.pow(bX(), 2) - 4 * aX() * cX();
+        }
+
+        private double deltaY() {
+            return Math.pow(bY(), 2) - 4 * aY() * cY();
+        }
+
+
+        private float x2t1(float x) {
+
+            _x02 = x;
+
+            return (float) ((-bX() + Math.pow(deltaX(), 0.5)) / (2 * aX()));
+        }
+
+        private float x2t2(float x) {
+
+            _x02 = x;
+
+            return (float) ((-bX() - Math.pow(deltaX(), 0.5)) / (2 * aX()));
+        }
+
+        private float y2t1(float y) {
+
+            _y02 = y;
+
+            return (float) ((-bY() + Math.pow(deltaY(), 0.5)) / (2 * aY()));
+        }
+
+        private float y2t2(float y) {
+
+            _y02 = y;
+
+            return (float) ((-bY() - Math.pow(deltaY(), 0.5)) / (2 * aY()));
+        }
+
+        private float[] x2t(float x) {
+
+            return new float[]{x2t1(x), x2t2(x)};
+        }
+
+
+        private float[] y2t(float y) {
+
+            return new float[]{y2t1(y), y2t2(y)};
+        }
+
+
+        public float y2x(float y) {
+
+            float t;
+
+            float[] ts = y2t(y);
+
+            if (ts[0] >= 0 && ts[0] <= 1) {
+                t = ts[0];
+            } else {
+
+                t = ts[1];
+            }
+
+            return x(t);
+
+        }
+
+        public float x2y(float x) {
+
+            float t;
+
+            float[] ts = x2t(x);
+
+            Log.d("QuadBezier", "------ts-->(" + ts[0] + "," + ts[1] + ")");
+
+            if (ts[0] >= 0 && ts[0] <= 1) {
+                t = ts[0];
+            } else {
+
+                t = ts[1];
+            }
+
+            return y(t);
+        }
+
+        public float findXByY(float y) {
+
+            final int len = max;
+
+            float gap = 1 / (float) len;
+
+            float t = 0;
+
+            for (int i = 0; i < len; i++) {
+
+                t += gap;
+
+                float[] p = p(t);
+
+                Log.d("QuadBezier", "----QuadBezier--->t = " + t);
+                Log.d("QuadBezier", "----QuadBezier--->len = " + len);
+                Log.d("QuadBezier", "----QuadBezier--->x = " + y);
+                Log.d("QuadBezier", "----QuadBezier--->p(" + p[0] + "," + p[1] + ")");
+
+                if (((int) p[1]) == y) {
+
+                    return p[0];
+                }
+            }
+
+
+            return 0;
+        }
+
+        public float findYByX(float x) {
+
+            final int len = max;
+
+            float gap = 1 / (float) len;
+
+            float t = 0;
+
+            for (int i = 0; i < len; i++) {
+
+                t += gap;
+
+                float[] p = p(t);
+
+                Log.d("QuadBezier", "----QuadBezier--->t = " + t);
+                Log.d("QuadBezier", "----QuadBezier--->len = " + len);
+                Log.d("QuadBezier", "----QuadBezier--->x = " + x);
+                Log.d("QuadBezier", "----QuadBezier--->p(" + p[0] + "," + p[1] + ")");
+
+                if (((int) p[0]) == x) {
+
+                    return p[1];
+                }
+            }
+
+            return 0;
+        }
+
+        public void setMax(int max) {
+            this.max = max;
+        }
+    }
+
+
     public static class CubicBezier {
 
         private int max = 1080;
@@ -115,11 +351,13 @@ public class LineUtils {
 
             final int len = max;
 
+            double gap = 1 / (double) len;
+
             double t = 0;
 
             for (int i = 0; i < len; i++) {
 
-                t += (1 / (double) len);
+                t += gap;
 
                 float[] p = p(t);
 
@@ -142,11 +380,13 @@ public class LineUtils {
 
             final int len = max;
 
+            double gap = 1 / (double) len;
+
             float t = 0;
 
             for (int i = 0; i < len; i++) {
 
-                t += 0.001;
+                t += gap;
 
                 float[] p = p(t);
 

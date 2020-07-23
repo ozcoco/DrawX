@@ -124,6 +124,7 @@ public class DrawView extends View {
     private final static int SEL_NONE = 0x0;
     private final static int SEL_C1 = 0x1;
     private final static int SEL_C2 = 0x2;
+    private final static int SEL_QC1 = 0xA1;
 
     private int sel = SEL_NONE;
     private int xDown, yDown;
@@ -151,6 +152,13 @@ public class DrawView extends View {
                 x2 = xDown;
                 y2 = yDown;
 
+            } else if (PointUtils.isContainsCircle(qx1, qy1, radius, xDown, yDown)) {
+
+                sel = SEL_QC1;
+
+                qx1 = xDown;
+                qy1 = yDown;
+
             }
 
             postInvalidate();
@@ -174,6 +182,11 @@ public class DrawView extends View {
                 x2 = x;
                 y2 = y;
 
+            } else if (sel == SEL_QC1) {
+
+                qx1 = x;
+                qy1 = y;
+
             }
 
             postInvalidate();
@@ -190,11 +203,14 @@ public class DrawView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
+        //
         drawAxis(canvas);
         drawLine(canvas);
         drawShape(canvas);
         drawPoint(canvas);
 
+        ///quad
+        drawQuad(canvas);
     }
 
     /****************************************** draw ******************************************/
@@ -347,6 +363,114 @@ public class DrawView extends View {
 
     }
 
+
+    //////////////******** quad bezier
+
+    private float qx0, qy0;
+    private float qx1 = Float.MIN_VALUE, qy1 = Float.MIN_VALUE;
+    private float qx2, qy2;
+    private float qadx = Float.MIN_VALUE, qady = Float.MIN_VALUE;
+
+    private void drawQuad(Canvas canvas) {
+
+        qx0 = x0;
+        qy0 = y0;
+
+        qx2 = 100;
+        qy2 = 100;
+
+        if (Float.MIN_VALUE == qadx && Float.MIN_VALUE == qady) {
+            qadx = qx0;
+            qady = qy0;
+        }
+
+        if (Float.MIN_VALUE == qx1 && Float.MIN_VALUE == qy1) {
+            qx1 = qx2;
+            qy1 = qy2;
+        }
+
+        Path path = new Path();
+        path.moveTo(qx0, qy0);
+        path.quadTo(qx1, qy1, qx2, qy2);
+        canvas.drawPath(path, linePaint);
+
+        int rawColor = linePaint.getColor();
+
+        //qc1 l
+        linePaint.setColor(Color.parseColor("#333333"));
+        canvas.drawLine(qx2, qy2, qx1, qy1, linePaint);
+        linePaint.setColor(rawColor);
+
+        rawColor = shapePaint.getColor();
+        //qc1
+        shapePaint.setColor(Color.parseColor("#03A9F4"));
+        canvas.drawCircle(qx1, qy1, radius, shapePaint);
+
+        //qad
+        shapePaint.setColor(Color.CYAN);
+        canvas.drawCircle(qadx, qady, rawRadius, shapePaint);
+
+        shapePaint.setColor(rawColor);
+
+        drawLineQAdjust(canvas);
+
+    }
+
+
+    private void drawLineQAdjust(Canvas canvas) {
+
+        if (qadx == Float.MIN_VALUE && qady == Float.MIN_VALUE) {
+            qadx = qx0;
+            qady = qy0;
+        }
+
+        int rawColor = linePaint.getColor();
+
+        linePaint.setColor(Color.DKGRAY);
+
+        canvas.drawLine(qadx, qady, qadx, qy0, linePaint);
+
+        linePaint.setColor(rawColor);
+
+    }
+
+    public void setQad(float qadx, float qady) {
+        this.qadx = qadx;
+        this.qady = qady;
+        postInvalidate();
+    }
+
+    public float getQadx() {
+        return qadx;
+    }
+
+    public float getQady() {
+        return qady;
+    }
+
+    public float getQx0() {
+        return qx0;
+    }
+
+    public float getQy0() {
+        return qy0;
+    }
+
+    public float getQx1() {
+        return qx1;
+    }
+
+    public float getQy1() {
+        return qy1;
+    }
+
+    public float getQx2() {
+        return qx2;
+    }
+
+    public float getQy2() {
+        return qy2;
+    }
 
     /****************************************** property ******************************************/
 

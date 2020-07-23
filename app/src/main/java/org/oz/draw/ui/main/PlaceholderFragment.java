@@ -79,12 +79,14 @@ public class PlaceholderFragment extends Fragment {
 
 
     private LineUtils.CubicBezier cubicBezier;
+    private LineUtils.QuadBezier quadBezier;
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         final AppCompatSeekBar seeker = view.findViewById(R.id.seeker);
+        final AppCompatSeekBar seeker2 = view.findViewById(R.id.seeker2);
         final DrawView drawer = view.findViewById(R.id.drawer);
 
         drawer.setOnTouchListener(new View.OnTouchListener() {
@@ -126,6 +128,51 @@ public class PlaceholderFragment extends Fragment {
 
                     if (y > 0)
                         drawer.setAd(x, y);
+
+                }
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+
+        seeker2.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+                if (fromUser) {
+
+                    seeker2.setMax(drawer.getWp() - 100);
+
+                    quadBezier = new LineUtils.QuadBezier(
+                            drawer.getQx0(),
+                            drawer.getQy0(),
+                            drawer.getQx1(),
+                            drawer.getQy1(),
+                            drawer.getQx2(),
+                            drawer.getQy2()
+                    );
+
+                    quadBezier.setMax(drawer.getWp());
+
+                    float x = drawer.getQx2() + progress;
+
+                    float y = quadBezier.findYByX(x);
+
+                    Log.d(TAG, "------quadBezier-->(" + x + "," + y + ")");
+
+                    if (y > 0)
+                        drawer.setQad(x, y);
 
                 }
 
