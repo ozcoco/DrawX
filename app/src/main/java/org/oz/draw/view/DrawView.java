@@ -390,8 +390,8 @@ public class DrawView extends View {
         }
 
         Path path = new Path();
-        path.moveTo(qx0, qy0);
-        path.quadTo(qx1, qy1, qx2, qy2);
+        path.moveTo(qx2, qy2);
+        path.quadTo(qx1, qy1, qx0, qy0);
         canvas.drawPath(path, linePaint);
 
         int rawColor = linePaint.getColor();

@@ -190,6 +190,48 @@ public class LineUtils {
             return y(t);
         }
 
+
+        public float[] xToy(float x) {
+
+            float[] ts = ot(x0, x1, x2, x);
+
+            if (ts.length > 1) {
+
+                return new float[]{y(ts[0]), y(ts[1])};
+
+            } else {
+
+                return new float[]{y(ts[0])};
+            }
+
+        }
+
+
+        private float[] ot(float z0, float z1, float z2, float zp) {
+            float a = z0 - z1 * 2 + z2,
+                    b = 2 * (z1 - z0),
+                    c = z0 - zp;
+            float tt = 0;
+            if (a == 0 && b != 0) {
+                tt = -c / b;
+            } else {
+                float sq = (float) Math.sqrt(b * b - 4 * a * c);
+                float tt1 = (sq - b) / (2 * a),
+                        tt2 = (-sq - b) / (2 * a);
+
+                if ((tt1 <= 1 && tt1 >= 0) && (tt2 <= 1 && tt2 >= 0)) {
+                    return new float[]{tt1, tt2};
+                } else if (tt1 <= 1 && tt1 >= 0) {
+                    tt = tt1;
+                } else {
+                    tt = tt2;
+                }
+            }
+
+            return new float[]{tt};
+        }
+
+
         public float findXByY(float y) {
 
             final int len = max;

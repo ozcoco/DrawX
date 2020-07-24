@@ -155,24 +155,38 @@ public class PlaceholderFragment extends Fragment {
                     seeker2.setMax(drawer.getWp() - 100);
 
                     quadBezier = new LineUtils.QuadBezier(
-                            drawer.getQx0(),
-                            drawer.getQy0(),
+                            drawer.getQx2(),
+                            drawer.getQy2(),
                             drawer.getQx1(),
                             drawer.getQy1(),
-                            drawer.getQx2(),
-                            drawer.getQy2()
+                            drawer.getQx0(),
+                            drawer.getQy0()
                     );
 
                     quadBezier.setMax(drawer.getWp());
 
                     float x = drawer.getQx2() + progress;
 
-                    float y = quadBezier.findYByX(x);
+//                    float y = quadBezier.findYByX(x);
+                    float[] ys = quadBezier.xToy(x);
+//                    float y = quadBezier.x2y(x);
 
-                    Log.d(TAG, "------quadBezier-->(" + x + "," + y + ")");
+                    if (ys.length > 1) {
 
-                    if (y > 0)
-                        drawer.setQad(x, y);
+                        Log.d(TAG, "------quadBezier-->(" + x + "," + ys[0] + ")");
+                        Log.d(TAG, "------quadBezier-->(" + x + "," + ys[1] + ")");
+
+                        if (ys[0] >= 0 && ys[0] <= drawer.getHp())
+                            drawer.setQad(x, ys[0]);
+                        else
+                            drawer.setQad(x, ys[1]);
+
+                    } else {
+
+                        Log.d(TAG, "------quadBezier-->(" + x + "," + ys[0] + ")");
+
+                        drawer.setQad(x, ys[0]);
+                    }
 
                 }
 
